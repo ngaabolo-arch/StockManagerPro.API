@@ -7,11 +7,11 @@ namespace StockManagerPro.API.Models
     {
         public int Id { get; set; }
         public string Nom { get; set; } = string.Empty;
-        public string Destcription { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
         [Column(TypeName = "decimal(18,3)")]
         public decimal Prix { get; set; }
         public int QuantiteEnStock { get; set; }
-        public int SeuilleAlert { get; set; }
+        public int SeuilAlerte { get; set; }
         public DateTime DateCreation { get; set; } = DateTime.Now;
         public DateTime DateModification { get; set; } = DateTime.Now;
 
