@@ -1,9 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StockManagerPro.API.Data;
+using Microsoft.AspNetCore.Authorization;
 
 namespace StockManagerPro.API.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class DashboardController : ControllerBase

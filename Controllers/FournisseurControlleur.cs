@@ -1,11 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StockManagerPro.API.Data;
 using StockManagerPro.API.DTOs;
 using StockManagerPro.API.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace StockManagerPro.API.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class FournisseursController : ControllerBase
