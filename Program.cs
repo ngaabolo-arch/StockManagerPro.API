@@ -1,14 +1,20 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System.Text;
 using StockManagerPro.API.Data;
+using StockManagerPro.API.Services;
+using StockManagerPro.API.Services;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddScoped<ICategorieService, CategorieService>();
+builder.Services.AddScoped<IFournisseurService, FournisseurService>();
+builder.Services.AddScoped<IMouvementService, MouvementService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
 
 // JWT
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");

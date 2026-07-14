@@ -1,139 +1,65 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using StockManagerPro.API.Data;
 using StockManagerPro.API.DTOs;
-using StockManagerPro.API.Models;
-using Microsoft.AspNetCore.Authorization;
+using StockManagerPro.API.Services;
 
-namespace StockManagerPro.API.Controllers
+namespace StockManagerPro.API.Controllers;
+
+[Authorize]
+[ApiController]
+[Route("api/[controller]")]
+public class MouvementsController : ControllerBase
 {
-    [Authorize]
-    [ApiController]
-    [Route("api/[controller]")]
-    public class MouvementsController : ControllerBase
+    private readonly IMouvementService _mouvementService;
+
+    public MouvementsController(IMouvementService mouvementService)
     {
-        private readonly AppDbContext _context;
+        _mouvementService = mouvementService;
+    }
 
-        public MouvementsController(AppDbContext context)
+    [HttpGet]
+    public async Task<IActionResult> GetAll()
+    {
+        var mouvements = await _mouvementService.GetAllAsync();
+        return Ok(mouvements);
+    }
+
+    [HttpGet("produit/{produitId}")]
+    public async Task<IActionResult> GetByProduit(int produitId)
+    {
+        var mouvements = await _mouvementService.GetByProduitAsync(produitId);
+        return Ok(mouvements);
+    }
+
+    [HttpPost("entree")]
+    public async Task<IActionResult> Entree(MouvementCreateDto dto)
+    {
+        try
         {
-            _context = context;
+            var mouvement = await _mouvementService.EntreeAsync(dto);
+            return Ok(mouvement);
         }
-
-        // GET api/mouvements
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<MouvementDto>>> GetAll()
+        catch (Exception ex)
         {
-            var mouvements = await _context.MouvementsStock
-                .Include(m => m.Produit)
-                .OrderByDescending(m => m.DateMouvement)
-                .ToListAsync();
-
-            return Ok(mouvements.Select(m => new MouvementDto
-            {
-                Id = m.Id,
-                Type = m.Type,
-                Quantite = m.Quantite,
-                Motif = m.Motif,
-                DateMouvement = m.DateMouvement,
-                ProduitNom = m.Produit.Nom
-            }));
+            return BadRequest(ex.Message);
         }
+    }
 
-        // GET api/mouvements/produit/5
-        [HttpGet("produit/{id}")]
-        public async Task<ActionResult<IEnumerable<MouvementDto>>> GetByProduit(int id)
+    [HttpPost("sortie")]
+    public async Task<IActionResult> Sortie(MouvementCreateDto dto)
+    {
+        try
         {
-            var produit = await _context.Produits.FindAsync(id);
-            if (produit == null) return NotFound();
-
-            var mouvements = await _context.MouvementsStock
-                .Include(m => m.Produit)
-                .Where(m => m.ProduitId == id)
-                .OrderByDescending(m => m.DateMouvement)
-                .ToListAsync();
-
-            return Ok(mouvements.Select(m => new MouvementDto
-            {
-                Id = m.Id,
-                Type = m.Type,
-                Quantite = m.Quantite,
-                Motif = m.Motif,
-                DateMouvement = m.DateMouvement,
-                ProduitNom = m.Produit.Nom
-            }));
+            var mouvement = await _mouvementService.SortieAsync(dto);
+            return Ok(mouvement);
         }
-
-        // POST api/mouvements/entree
-        [HttpPost("entree")]
-        public async Task<ActionResult<MouvementDto>> Entree(MouvementCreateDto dto)
+        catch (InvalidOperationException ex)
         {
-            var produit = await _context.Produits.FindAsync(dto.ProduitId);
-            if (produit == null) return NotFound("Produit introuvable");
-
-            // Mise à jour du stock
-            produit.QuantiteEnStock += dto.Quantite;
-            produit.DateModification = DateTime.Now;
-
-            var mouvement = new MouvementStock
-            {
-                ProduitId = dto.ProduitId,
-                Type = "ENTREE",
-                Quantite = dto.Quantite,
-                Motif = dto.Motif,
-                DateMouvement = DateTime.Now
-            };
-
-            _context.MouvementsStock.Add(mouvement);
-            await _context.SaveChangesAsync();
-
-            return Ok(new MouvementDto
-            {
-                Id = mouvement.Id,
-                Type = mouvement.Type,
-                Quantite = mouvement.Quantite,
-                Motif = mouvement.Motif,
-                DateMouvement = mouvement.DateMouvement,
-                ProduitNom = produit.Nom
-            });
+            return BadRequest(ex.Message);
         }
-
-        // POST api/mouvements/sortie
-        [HttpPost("sortie")]
-        public async Task<ActionResult<MouvementDto>> Sortie(MouvementCreateDto dto)
+        catch (Exception ex)
         {
-            var produit = await _context.Produits.FindAsync(dto.ProduitId);
-            if (produit == null) return NotFound("Produit introuvable");
-
-            // Vérification stock suffisant
-            if (produit.QuantiteEnStock < dto.Quantite)
-                return BadRequest($"Stock insuffisant. Stock actuel : {produit.QuantiteEnStock}");
-
-            // Mise à jour du stock
-            produit.QuantiteEnStock -= dto.Quantite;
-            produit.DateModification = DateTime.Now;
-
-            var mouvement = new MouvementStock
-            {
-                ProduitId = dto.ProduitId,
-                Type = "SORTIE",
-                Quantite = dto.Quantite,
-                Motif = dto.Motif,
-                DateMouvement = DateTime.Now
-            };
-
-            _context.MouvementsStock.Add(mouvement);
-            await _context.SaveChangesAsync();
-
-            return Ok(new MouvementDto
-            {
-                Id = mouvement.Id,
-                Type = mouvement.Type,
-                Quantite = mouvement.Quantite,
-                Motif = mouvement.Motif,
-                DateMouvement = mouvement.DateMouvement,
-                ProduitNom = produit.Nom
-            });
+            return BadRequest(ex.Message);
         }
     }
 }

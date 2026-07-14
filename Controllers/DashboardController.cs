@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using StockManagerPro.API.Data;
-using Microsoft.AspNetCore.Authorization;
+using StockManagerPro.API.Services;
 
 namespace StockManagerPro.API.Controllers;
 
@@ -11,28 +9,17 @@ namespace StockManagerPro.API.Controllers;
 [Route("api/[controller]")]
 public class DashboardController : ControllerBase
 {
-    private readonly AppDbContext _context;
+    private readonly IDashboardService _dashboardService;
 
-    public DashboardController(AppDbContext context)
+    public DashboardController(IDashboardService dashboardService)
     {
-        _context = context;
+        _dashboardService = dashboardService;
     }
 
     [HttpGet]
     public async Task<IActionResult> GetStats()
     {
-        var today = DateTime.Today;
-
-        var stats = new
-        {
-            TotalProduits = await _context.Produits.CountAsync(),
-            TotalCategories = await _context.Categories.CountAsync(),
-            ProduitsEnAlerte = await _context.Produits
-                .CountAsync(p => p.QuantiteEnStock <= p.SeuilAlerte),
-            MouvementsAujourdhui = await _context.MouvementsStock
-                .CountAsync(m => m.DateMouvement.Date == today)
-        };
-
+        var stats = await _dashboardService.GetStatsAsync();
         return Ok(stats);
     }
 }
