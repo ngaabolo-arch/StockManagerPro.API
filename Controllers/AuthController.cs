@@ -1,12 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using StockManagerPro.API.Data;
 using StockManagerPro.API.DTOs;
-using StockManagerPro.API.Models;
+using StockManagerPro.API.Services;
 
 namespace StockManagerPro.API.Controllers;
 
@@ -14,78 +8,38 @@ namespace StockManagerPro.API.Controllers;
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
-    private readonly AppDbContext _context;
-    private readonly IConfiguration _configuration;
+    private readonly IAuthService _authService;
 
-    public AuthController(AppDbContext context, IConfiguration configuration)
+    public AuthController(IAuthService authService)
     {
-        _context = context;
-        _configuration = configuration;
+        _authService = authService;
     }
 
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterDto dto)
     {
-        if (await _context.Utilisateurs.AnyAsync(u => u.Email == dto.Email))
-            return BadRequest("Un compte avec cet email existe déjà");
-
-        var utilisateur = new Utilisateur
+        try
         {
-            Nom = dto.Nom,
-            Email = dto.Email,
-            MotDePasseHash = BCrypt.Net.BCrypt.HashPassword(dto.MotDePasse)
-        };
-
-        _context.Utilisateurs.Add(utilisateur);
-        await _context.SaveChangesAsync();
-
-        return Ok("Compte créé avec succès");
+            var message = await _authService.RegisterAsync(dto);
+            return Ok(message);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginDto dto)
     {
-        var utilisateur = await _context.Utilisateurs
-            .FirstOrDefaultAsync(u => u.Email == dto.Email);
-
-        if (utilisateur == null)
-            return Unauthorized("Email ou mot de passe incorrect");
-
-        if (!BCrypt.Net.BCrypt.Verify(dto.MotDePasse, utilisateur.MotDePasseHash))
-            return Unauthorized("Email ou mot de passe incorrect");
-
-        var token = GenererToken(utilisateur);
-
-        return Ok(new AuthResponseDto
+        try
         {
-            Token = token,
-            Nom = utilisateur.Nom,
-            Email = utilisateur.Email
-        });
-    }
-
-    private string GenererToken(Utilisateur utilisateur)
-    {
-        var jwtSettings = _configuration.GetSection("JwtSettings");
-        var secretKey = jwtSettings["SecretKey"]!;
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
-        var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-        var claims = new[]
+            var response = await _authService.LoginAsync(dto);
+            return Ok(response);
+        }
+        catch (UnauthorizedAccessException ex)
         {
-            new Claim(ClaimTypes.NameIdentifier, utilisateur.Id.ToString()),
-            new Claim(ClaimTypes.Email, utilisateur.Email),
-            new Claim(ClaimTypes.Name, utilisateur.Nom)
-        };
-
-        var token = new JwtSecurityToken(
-            issuer: jwtSettings["Issuer"],
-            audience: jwtSettings["Audience"],
-            claims: claims,
-            expires: DateTime.Now.AddHours(24),
-            signingCredentials: credentials
-        );
-
-        return new JwtSecurityTokenHandler().WriteToken(token);
+            return Unauthorized(ex.Message);
+        }
     }
 }
