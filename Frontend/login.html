@@ -1,0 +1,330 @@
+```html
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StockManager Pro — Connexion</title>
+
+    <style>
+        /* =========================
+           RESET
+        ========================= */
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+
+        /* =========================
+           PALETTE
+        ========================= */
+
+        :root {
+            --beige-fond: #E8D8C3;
+            --beige-clair: #F7F0E6;
+            --creme: #FFF9F2;
+            --chocolat: #4A2C24;
+            --chocolat-fonce: #321D18;
+            --marron: #6B4638;
+            --bordeaux: #7A263A;
+            --bordeaux-fonce: #5D1C2C;
+            --texte-clair: #806D63;
+            --bordure: #D8C4AF;
+        }
+
+
+        /* =========================
+           PAGE
+        ========================= */
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: var(--beige-fond);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--chocolat);
+        }
+
+
+        /* =========================
+           CARTE DE CONNEXION
+        ========================= */
+
+        .login-card {
+            width: 400px;
+            background: var(--creme);
+            padding: 42px;
+            border-radius: 16px;
+            border: 1px solid var(--bordure);
+            box-shadow: 0 20px 50px rgba(74, 44, 36, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+
+            /* Barre décorative supérieure */
+
+            .login-card::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 5px;
+                background: var(--bordeaux);
+            }
+
+
+        /* =========================
+           TITRE
+        ========================= */
+
+        h1 {
+            color: var(--chocolat-fonce);
+            font-size: 26px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: 0.3px;
+        }
+
+
+        /* =========================
+           SOUS-TITRE
+        ========================= */
+
+        p.subtitle {
+            color: var(--texte-clair);
+            font-size: 14px;
+            margin-bottom: 32px;
+        }
+
+
+        /* =========================
+           LABELS
+        ========================= */
+
+        label {
+            display: block;
+            color: var(--chocolat);
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 7px;
+        }
+
+
+        /* =========================
+           CHAMPS
+        ========================= */
+
+        input {
+            width: 100%;
+            padding: 13px 14px;
+            background: var(--beige-clair);
+            border: 1px solid var(--bordure);
+            border-radius: 8px;
+            color: var(--chocolat-fonce);
+            font-size: 14px;
+            margin-bottom: 20px;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+
+            input::placeholder {
+                color: #A89487;
+            }
+
+
+            input:focus {
+                border-color: var(--bordeaux);
+                background: #FFFDFC;
+                box-shadow: 0 0 0 3px rgba(122, 38, 58, 0.08);
+            }
+
+
+        /* =========================
+           BOUTON
+        ========================= */
+
+        button {
+            width: 100%;
+            padding: 13px;
+            background: var(--bordeaux);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 10px rgba(122, 38, 58, 0.18);
+        }
+
+
+            button:hover {
+                background: var(--bordeaux-fonce);
+                transform: translateY(-1px);
+                box-shadow: 0 6px 14px rgba(122, 38, 58, 0.22);
+            }
+
+
+            button:active {
+                transform: translateY(0);
+            }
+
+
+        /* =========================
+           MESSAGE D'ERREUR
+        ========================= */
+
+        .error {
+            color: var(--bordeaux);
+            background: #F7E9EC;
+            border: 1px solid #E4BFC8;
+            font-size: 13px;
+            margin-top: 14px;
+            padding: 10px 12px;
+            border-radius: 7px;
+            display: none;
+            text-align: center;
+        }
+
+
+        /* =========================
+           RESPONSIVE
+        ========================= */
+
+        @media (max-width: 500px) {
+
+            .login-card {
+                width: calc(100% - 32px);
+                padding: 32px 25px;
+            }
+        }
+    </style>
+</head>
+
+
+<body>
+
+    <div class="login-card">
+
+        <h1>StockManager Pro</h1>
+
+        <p class="subtitle">
+            Connectez-vous à votre espace
+        </p>
+
+
+        <label>Email</label>
+
+        <input type="email"
+               id="email"
+               placeholder="votre@email.com">
+
+
+        <label>Mot de passe</label>
+
+        <input type="password"
+               id="motDePasse"
+               placeholder="votre mot de passe">
+
+
+        <button onclick="login()">
+            Se connecter
+        </button>
+
+
+        <p class="error" id="erreur">
+            Email ou mot de passe incorrect.
+        </p>
+
+    </div>
+
+
+    <script>
+
+        // Si déjà connecté,
+        // aller directement au dashboard
+
+        if (localStorage.getItem("token")) {
+
+            window.location.href = "dashboard.html";
+
+        }
+
+
+        async function login() {
+
+            const email =
+                document.getElementById("email").value;
+
+            const motDePasse =
+                document.getElementById("motDePasse").value;
+
+
+            try {
+
+                const response = await fetch(
+                    "http://localhost:5000/api/Auth/login",
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+
+                        body: JSON.stringify({
+                            email,
+                            motDePasse
+                        })
+                    }
+                );
+
+
+                if (!response.ok) {
+
+                    document.getElementById("erreur")
+                        .style.display = "block";
+
+                    return;
+                }
+
+
+                const data = await response.json();
+
+
+                localStorage.setItem(
+                    "token",
+                    data.token
+                );
+
+                localStorage.setItem(
+                    "nom",
+                    data.nom
+                );
+
+
+                window.location.href =
+                    "dashboard.html";
+
+
+            } catch (error) {
+
+                document.getElementById("erreur")
+                    .style.display = "block";
+
+            }
+
+        }
+
+    </script>
+
+</body>
+</html>
+```

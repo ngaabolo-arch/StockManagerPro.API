@@ -1,0 +1,429 @@
+```html
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StockManager Pro — Dashboard</title>
+
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --beige-fond: #E8D8C3;
+            --beige-clair: #F7F0E6;
+            --creme: #FFF9F2;
+            --chocolat: #4A2C24;
+            --chocolat-fonce: #321D18;
+            --marron: #6B4638;
+            --bordeaux: #7A263A;
+            --bordeaux-fonce: #5D1C2C;
+            --texte: #38251F;
+            --texte-clair: #806D63;
+            --bordure: #D8C4AF;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: var(--beige-fond);
+            color: var(--texte);
+            min-height: 100vh;
+        }
+
+        nav {
+            background: var(--chocolat);
+            padding: 18px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid var(--bordeaux);
+            box-shadow: 0 4px 15px rgba(74, 44, 36, 0.15);
+        }
+
+            nav h1 {
+                font-size: 21px;
+                font-weight: 700;
+                color: var(--beige-clair);
+                letter-spacing: 0.5px;
+            }
+
+
+            nav div {
+                display: flex;
+                align-items: center;
+                gap: 18px;
+            }
+
+
+            nav span {
+                color: #E8D8C3;
+                font-size: 14px;
+            }
+
+
+            nav button {
+                padding: 9px 18px;
+                background: var(--bordeaux);
+                color: white;
+                border: none;
+                border-radius: 7px;
+                cursor: pointer;
+                font-size: 13px;
+                font-weight: 600;
+                transition: 0.2s ease;
+            }
+
+
+                nav button:hover {
+                    background: var(--bordeaux-fonce);
+                    transform: translateY(-1px);
+                }
+
+        .container {
+            padding: 40px;
+            max-width: 1400px;
+            margin: auto;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 35px;
+            flex-wrap: wrap;
+        }
+
+
+            .nav-links a {
+                padding: 11px 22px;
+                background: var(--creme);
+                color: var(--chocolat);
+                text-decoration: none;
+                border-radius: 8px;
+                border: 1px solid var(--bordure);
+                font-size: 14px;
+                font-weight: 600;
+                transition: all 0.2s ease;
+                box-shadow: 0 2px 6px rgba(74, 44, 36, 0.06);
+            }
+
+
+                .nav-links a:hover {
+                    background: var(--chocolat);
+                    color: var(--beige-clair);
+                    border-color: var(--chocolat);
+                    transform: translateY(-2px);
+                    box-shadow: 0 5px 12px rgba(74, 44, 36, 0.15);
+                }
+
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 22px;
+            margin-bottom: 32px;
+        }
+
+
+        .stat-card {
+            background: var(--creme);
+            padding: 26px;
+            border-radius: 14px;
+            border: 1px solid var(--bordure);
+            box-shadow: 0 6px 18px rgba(74, 44, 36, 0.08);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+
+            .stat-card:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 10px 25px rgba(74, 44, 36, 0.13);
+            }
+
+            .stat-card::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 4px;
+                background: var(--chocolat);
+            }
+
+
+            .stat-card .label {
+                color: var(--texte-clair);
+                font-size: 13px;
+                margin-bottom: 10px;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+
+
+            /*  VALEUR */
+
+            .stat-card .value {
+                font-size: 36px;
+                font-weight: 700;
+                color: var(--chocolat-fonce);
+            }
+
+
+            /* CARTE ALERTE */
+
+            .stat-card.alerte {
+                border-color: #D9AAB4;
+            }
+
+
+                .stat-card.alerte::before {
+                    background: var(--bordeaux);
+                }
+
+
+                .stat-card.alerte .value {
+                    color: var(--bordeaux);
+                }
+
+
+        /* RESPONSIVE */
+
+        @media (max-width: 900px) {
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .container {
+                padding: 25px;
+            }
+
+            nav {
+                padding: 16px 25px;
+            }
+        }
+
+
+        @media (max-width: 600px) {
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            nav {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+
+                nav div {
+                    width: 100%;
+                    justify-content: space-between;
+                }
+
+            .nav-links {
+                flex-direction: column;
+            }
+
+                .nav-links a {
+                    text-align: center;
+                }
+        }
+    </style>
+</head>
+
+
+<body>
+
+    <!-- NAVIGATION -->
+
+    <nav>
+
+        <h1>StockManager Pro</h1>
+
+        <div>
+
+            <span id="nomUtilisateur"></span>
+
+            <button onclick="deconnexion()">
+                Déconnexion
+            </button>
+
+        </div>
+
+    </nav>
+
+
+    <!--  CONTENU PRINCIPAL  -->
+
+    <div class="container">
+
+
+        <!-- MENU -->
+
+        <div class="nav-links">
+
+            <a href="produits.html">
+                Produits
+            </a>
+
+            <a href="categories.html">
+                Catégories
+            </a>
+
+            <a href="mouvements.html">
+                Mouvements
+            </a>
+
+            <a href="alertes.html">
+                Alertes
+            </a>
+
+        </div>
+
+
+        <!-- STATISTIQUES -->
+
+        <div class="stats-grid">
+
+
+            <!-- TOTAL PRODUITS -->
+
+            <div class="stat-card">
+
+                <div class="label">
+                    Total Produits
+                </div>
+
+                <div class="value" id="totalProduits">
+                    —
+                </div>
+
+            </div>
+
+
+            <!-- CATÉGORIES -->
+
+            <div class="stat-card">
+
+                <div class="label">
+                    Catégories
+                </div>
+
+                <div class="value" id="totalCategories">
+                    —
+                </div>
+
+            </div>
+
+
+            <!-- ALERTES -->
+
+            <div class="stat-card alerte">
+
+                <div class="label">
+                    Produits en alerte
+                </div>
+
+                <div class="value" id="produitsEnAlerte">
+                    —
+                </div>
+
+            </div>
+
+
+            <!-- MOUVEMENTS -->
+
+            <div class="stat-card">
+
+                <div class="label">
+                    Mouvements aujourd'hui
+                </div>
+
+                <div class="value" id="mouvementsAujourdhui">
+                    —
+                </div>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+
+    <!-- JAVASCRIPT -->
+
+    <script>
+
+        const token = localStorage.getItem("token");
+        const nom = localStorage.getItem("nom");
+
+
+        if (!token) {
+
+            window.location.href = "login.html";
+
+        }
+
+
+        document.getElementById("nomUtilisateur").textContent =
+            "Bonjour, " + nom;
+
+
+        async function chargerStats() {
+
+            const response = await fetch(
+                "http://localhost:5000/api/Dashboard",
+                {
+                    headers: {
+                        "Authorization": "Bearer " + token
+                    }
+                }
+            );
+
+
+            const data = await response.json();
+
+
+            document.getElementById("totalProduits").textContent =
+                data.totalProduits;
+
+
+            document.getElementById("totalCategories").textContent =
+                data.totalCategories;
+
+
+            document.getElementById("produitsEnAlerte").textContent =
+                data.produitsEnAlerte;
+
+
+            document.getElementById("mouvementsAujourdhui").textContent =
+                data.mouvementsAujourdhui;
+
+        }
+
+
+        function deconnexion() {
+
+            localStorage.clear();
+
+            window.location.href = "login.html";
+
+        }
+
+
+        chargerStats();
+
+    </script>
+
+</body>
+</html>
+```
