@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StockManager Pro — Mouvements</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --beige-fond: #E8D8C3;
+            --beige-clair: #F7F0E6;
+            --creme: #FFF9F2;
+            --chocolat: #4A2C24;
+            --chocolat-fonce: #321D18;
+            --marron: #6B4638;
+            --bordeaux: #7A263A;
+            --bordeaux-fonce: #5D1C2C;
+            --texte-clair: #806D63;
+            --bordure: #D8C4AF;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: var(--beige-fond);
+            color: var(--chocolat);
+            min-height: 100vh;
+        }
+
+        nav {
+            background: var(--creme);
+            padding: 16px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--bordure);
+            box-shadow: 0 2px 8px rgba(74,44,36,0.08);
+        }
+
+            nav h1 {
+                font-size: 20px;
+                color: var(--bordeaux);
+                font-weight: 700;
+            }
+
+            nav a {
+                color: var(--texte-clair);
+                text-decoration: none;
+                font-size: 14px;
+                font-weight: 600;
+            }
+
+                nav a:hover {
+                    color: var(--chocolat);
+                }
+
+        .container {
+            padding: 32px;
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+            .toolbar h2 {
+                font-size: 22px;
+                color: var(--chocolat-fonce);
+            }
+
+        .toolbar-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-primary {
+            padding: 10px 20px;
+            background: var(--bordeaux);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 4px 10px rgba(122,38,58,0.18);
+            transition: all 0.2s ease;
+        }
+
+            .btn-primary:hover {
+                background: var(--bordeaux-fonce);
+                transform: translateY(-1px);
+            }
+
+        .btn-entree {
+            padding: 10px 20px;
+            background: #5a8a5a;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+            .btn-entree:hover {
+                background: #4a7a4a;
+                transform: translateY(-1px);
+            }
+
+        .btn-sortie {
+            padding: 10px 20px;
+            background: var(--bordeaux);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+            .btn-sortie:hover {
+                background: var(--bordeaux-fonce);
+                transform: translateY(-1px);
+            }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--creme);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--bordure);
+            box-shadow: 0 4px 16px rgba(74,44,36,0.08);
+        }
+
+        th {
+            background: var(--beige-clair);
+            padding: 14px 16px;
+            text-align: left;
+            font-size: 13px;
+            color: var(--texte-clair);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--bordure);
+        }
+
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--bordure);
+            font-size: 14px;
+            color: var(--chocolat);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: var(--beige-clair);
+        }
+
+        .badge-entree {
+            background: #5a8a5a;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-sortie {
+            background: var(--bordeaux);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(74,44,36,0.4);
+            justify-content: center;
+            align-items: center;
+        }
+
+            .modal-overlay.active {
+                display: flex;
+            }
+
+        .modal {
+            background: var(--creme);
+            padding: 36px;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 440px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid var(--bordure);
+            box-shadow: 0 20px 50px rgba(74,44,36,0.2);
+            position: relative;
+        }
+
+            .modal::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 5px;
+                background: var(--bordeaux);
+            }
+
+            .modal h3 {
+                margin-bottom: 20px;
+                font-size: 18px;
+                color: var(--chocolat-fonce);
+            }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+            .form-group label {
+                display: block;
+                color: var(--chocolat);
+                font-size: 13px;
+                font-weight: 600;
+                margin-bottom: 6px;
+            }
+
+            .form-group input,
+            .form-group select {
+                width: 100%;
+                padding: 11px 12px;
+                background: var(--beige-clair);
+                border: 1px solid var(--bordure);
+                border-radius: 8px;
+                color: var(--chocolat-fonce);
+                font-size: 14px;
+                outline: none;
+                transition: all 0.2s ease;
+            }
+
+                .form-group input:focus,
+                .form-group select:focus {
+                    border-color: var(--bordeaux);
+                    box-shadow: 0 0 0 3px rgba(122,38,58,0.08);
+                }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .btn-secondary {
+            padding: 10px 20px;
+            background: var(--beige-clair);
+            color: var(--chocolat);
+            border: 1px solid var(--bordure);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+            .btn-secondary:hover {
+                background: var(--bordure);
+            }
+
+        .error-msg {
+            color: var(--bordeaux);
+            background: #F7E9EC;
+            border: 1px solid #E4BFC8;
+            font-size: 13px;
+            margin-top: 12px;
+            padding: 10px 12px;
+            border-radius: 7px;
+            display: none;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <h1>StockManager Pro</h1>
+        <a href="dashboard.html">← Dashboard</a>
+    </nav>
+
+    <div class="container">
+        <div class="toolbar">
+            <h2>Mouvements de stock</h2>
+            <div class="toolbar-actions">
+                <button class="btn-entree" onclick="ouvrirModal('ENTREE')">+ Entrée</button>
+                <button class="btn-sortie" onclick="ouvrirModal('SORTIE')">− Sortie</button>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Produit</th>
+                    <th>Type</th>
+                    <th>Quantité</th>
+                    <th>Motif</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody id="tableMouvements">
+                <tr><td colspan="5" style="text-align:center;color:var(--texte-clair);padding:32px;">Chargement...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="modal-overlay" id="modal">
+        <div class="modal">
+            <h3 id="modalTitre">Entrée de stock</h3>
+            <div class="form-group">
+                <label>Produit</label>
+                <select id="produitId"></select>
+            </div>
+            <div class="form-group">
+                <label>Quantité</label>
+                <input type="number" id="quantite" min="1">
+            </div>
+            <div class="form-group">
+                <label>Motif</label>
+                <input type="text" id="motif">
+            </div>
+            <div class="modal-actions">
+                <button class="btn-primary" onclick="enregistrerMouvement()">Enregistrer</button>
+                <button class="btn-secondary" onclick="fermerModal()">Annuler</button>
+            </div>
+            <p class="error-msg" id="erreur"></p>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem("token");
+        if (!token) window.location.href = "login.html";
+
+        const API = "http://localhost:5000/api";
+        let typeMouvement = "ENTREE";
+
+        async function chargerMouvements() {
+            const res = await fetch(`${API}/Mouvements`, {
+                headers: { "Authorization": "Bearer " + token }
+            });
+            const mouvements = await res.json();
+            const tbody = document.getElementById("tableMouvements");
+            tbody.innerHTML = mouvements.map(m => `
+                    <tr>
+                        <td>${m.produitNom}</td>
+                        <td>${m.type === "ENTREE"
+                    ? '<span class="badge-entree">ENTRÉE</span>'
+                    : '<span class="badge-sortie">SORTIE</span>'}</td>
+                        <td>${m.quantite}</td>
+                        <td>${m.motif}</td>
+                        <td>${new Date(m.dateMouvement).toLocaleDateString('fr-FR')}</td>
+                    </tr>
+                `).join("");
+        }
+
+        async function ouvrirModal(type) {
+            typeMouvement = type;
+            document.getElementById("modalTitre").textContent =
+                type === "ENTREE" ? "Entrée de stock" : "Sortie de stock";
+            document.getElementById("erreur").style.display = "none";
+            document.getElementById("modal").classList.add("active");
+
+            const res = await fetch(`${API}/Produits`, {
+                headers: { "Authorization": "Bearer " + token }
+            });
+            const produits = await res.json();
+            document.getElementById("produitId").innerHTML =
+                produits.map(p => `<option value="${p.id}">${p.nom} (stock: ${p.quantiteEnStock})</option>`).join("");
+        }
+
+        function fermerModal() {
+            document.getElementById("modal").classList.remove("active");
+        }
+
+        async function enregistrerMouvement() {
+            const body = {
+                produitId: parseInt(document.getElementById("produitId").value),
+                quantite: parseInt(document.getElementById("quantite").value),
+                motif: document.getElementById("motif").value
+            };
+
+            const endpoint = typeMouvement === "ENTREE" ? "entree" : "sortie";
+            const res = await fetch(`${API}/Mouvements/${endpoint}`, {
+                method: "POST",
+                headers: {
+                    "Authorization": "Bearer " + token,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(body)
+            });
+
+            if (!res.ok) {
+                const msg = await res.text();
+                const erreur = document.getElementById("erreur");
+                erreur.textContent = msg;
+                erreur.style.display = "block";
+                return;
+            }
+
+            fermerModal();
+            chargerMouvements();
+        }
+
+        chargerMouvements();
+    </script>
+</body>
+</html>

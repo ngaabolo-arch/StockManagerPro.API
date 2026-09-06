@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StockManager Pro — Alertes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --beige-fond: #E8D8C3;
+            --beige-clair: #F7F0E6;
+            --creme: #FFF9F2;
+            --chocolat: #4A2C24;
+            --chocolat-fonce: #321D18;
+            --bordeaux: #7A263A;
+            --bordeaux-fonce: #5D1C2C;
+            --texte-clair: #806D63;
+            --bordure: #D8C4AF;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: var(--beige-fond);
+            color: var(--chocolat);
+            min-height: 100vh;
+        }
+
+        nav {
+            background: var(--creme);
+            padding: 16px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--bordure);
+            box-shadow: 0 2px 8px rgba(74,44,36,0.08);
+        }
+
+            nav h1 {
+                font-size: 20px;
+                color: var(--bordeaux);
+                font-weight: 700;
+            }
+
+            nav a {
+                color: var(--texte-clair);
+                text-decoration: none;
+                font-size: 14px;
+                font-weight: 600;
+            }
+
+                nav a:hover {
+                    color: var(--chocolat);
+                }
+
+        .container {
+            padding: 32px;
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+            .toolbar h2 {
+                font-size: 22px;
+                color: var(--chocolat-fonce);
+            }
+
+        .alerte-banner {
+            background: #F7E9EC;
+            border: 1px solid #E4BFC8;
+            border-radius: 10px;
+            padding: 14px 18px;
+            margin-bottom: 24px;
+            color: var(--bordeaux);
+            font-size: 14px;
+            font-weight: 600;
+            display: none;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--creme);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--bordure);
+            box-shadow: 0 4px 16px rgba(74,44,36,0.08);
+        }
+
+        th {
+            background: var(--beige-clair);
+            padding: 14px 16px;
+            text-align: left;
+            font-size: 13px;
+            color: var(--texte-clair);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--bordure);
+        }
+
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--bordure);
+            font-size: 14px;
+            color: var(--chocolat);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: var(--beige-clair);
+        }
+
+        .stock-critique {
+            color: var(--bordeaux);
+            font-weight: 700;
+        }
+
+        .badge-alerte {
+            background: var(--bordeaux);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .vide {
+            text-align: center;
+            padding: 48px;
+            color: var(--texte-clair);
+        }
+
+            .vide .icon {
+                font-size: 48px;
+                margin-bottom: 12px;
+            }
+
+            .vide p {
+                font-size: 16px;
+            }
+    </style>
+</head>
+<body>
+    <nav>
+        <h1>StockManager Pro</h1>
+        <a href="dashboard.html">← Dashboard</a>
+    </nav>
+
+    <div class="container">
+        <div class="toolbar">
+            <h2>⚠️ Produits en alerte</h2>
+        </div>
+
+        <div class="alerte-banner" id="banner"></div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Produit</th>
+                    <th>Catégorie</th>
+                    <th>Fournisseur</th>
+                    <th>Stock actuel</th>
+                    <th>Seuil d'alerte</th>
+                    <th>Statut</th>
+                </tr>
+            </thead>
+            <tbody id="tableAlertes">
+                <tr><td colspan="6" style="text-align:center;color:var(--texte-clair);padding:32px;">Chargement...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const token = localStorage.getItem("token");
+        if (!token) window.location.href = "login.html";
+
+        const API = "http://localhost:5000/api";
+
+        async function chargerAlertes() {
+            const res = await fetch(`${API}/Produits/alertes`, {
+                headers: { "Authorization": "Bearer " + token }
+            });
+            const produits = await res.json();
+            const tbody = document.getElementById("tableAlertes");
+            const banner = document.getElementById("banner");
+
+            if (produits.length === 0) {
+                tbody.innerHTML = `
+                    <tr><td colspan="6">
+                        <div class="vide">
+                            <div class="icon">✅</div>
+                            <p>Aucun produit en alerte — tous les stocks sont suffisants.</p>
+                        </div>
+                    </td></tr>`;
+                return;
+            }
+
+            banner.textContent = `⚠️ ${produits.length} produit(s) en dessous du seuil d'alerte.`;
+            banner.style.display = "block";
+
+            tbody.innerHTML = produits.map(p => `
+                <tr>
+                    <td>${p.nom}</td>
+                    <td>${p.categorieNom}</td>
+                    <td>${p.fournisseurNom}</td>
+                    <td class="stock-critique">${p.quantiteEnStock}</td>
+                    <td>${p.seuilAlerte}</td>
+                    <td><span class="badge-alerte">Alerte</span></td>
+                </tr>
+            `).join("");
+        }
+
+        chargerAlertes();
+    </script>
+</body>
+</html>
